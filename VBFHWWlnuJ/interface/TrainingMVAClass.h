@@ -49,6 +49,7 @@ class TrainingMVAClass {
 
   // Set Training and Spectator Variables
   void AddTrainingVariables ( const std::vector<std::string> & mapTrainingVariables, const std::vector<std::string> & mapSpectatorVariables);	       
+  void AddTrainingVariables ( const std::string & mapTrainingVariables, const std::vector<std::string> & mapSpectatorVariables);	       
 
   // Set the pre-selection cut for the trainning dependig on: lepton tye = muon,electron or MuonEle, type of preselection, weight, pTbin and splitting 
   void AddPrepareTraining (const std::string & LeptonType, const std::string & preselectionCutType, 

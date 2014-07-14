@@ -2,7 +2,7 @@
 ## Spectator Variable List ######
 #################################
 ungroomed_jet_pt
-nPV
+#nPV
 jet_mass_pr
 #vbf_maxpt_j1_pt
 #vbf_maxpt_j2_pt

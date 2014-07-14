@@ -1,5 +1,16 @@
 #######################################
 ## Input Variables for Cut Optimization
 ########################################
-abs(vbf_maxpt_j1_eta-vbf_maxpt_j2_eta)
-vbf_maxpt_jj_m
+#jet_mass_pr
+#TMath::Sqrt(ungroomed_jet_e*ungroomed_jet_e-ungroomed_jet_pt*ungroomed_jet_pt-TMath::SinH(ungroomed_jet_eta)*TMath::SinH(ungroomed_jet_eta)*ungroomed_jet_pt*ungroomed_jet_pt)
+jet_tau2tau1
+#jet_GeneralizedECF
+#jet_rcore5
+#jet_sjdr
+#jet_qjetvol
+#nPV
+#jet_jetconstituents
+#jet_massdrop_pr
+#jet_charge_k10
+#jet_tau2tau1_pr
+#jet_tau2tau1_exkT

@@ -67,11 +67,18 @@ int main (int argc, char** argv){
   std::cout<<" Input LeptonType     = "<<LeptonType<<std::endl;
   std::cout<<std::endl;
 
-  bool isPrintResultwithTMVA = false ;
+  /*bool isPrintResultwithTMVA = false ;
   try{  isPrintResultwithTMVA = gConfigParser -> readBoolOption("Input::isPrintResultwithTMVA"); }
   catch(char const* exceptionString){
     isPrintResultwithTMVA = false;
     std::cerr<<" isPrintResultwithTMVA --> set to false "<<std::endl;
+  }
+  */
+  bool isTrainEachVariable = false ;
+  try{  isTrainEachVariable = gConfigParser -> readBoolOption("Option::TrainEachVariable"); }
+  catch(char const* exceptionString){
+    isTrainEachVariable = false;
+    std::cerr<<" isTrainEachVariable --> set to false "<<std::endl;
   }
 
   std::string SignalggHName ;
@@ -83,6 +90,17 @@ int main (int argc, char** argv){
 
   std::cout<<" Option Signal ggH Name = "<<SignalggHName<<std::endl;
   std::cout<<std::endl;
+
+  int useTypeOfSignal = 0;
+  try{ useTypeOfSignal = gConfigParser -> readIntOption("Option::useTypeOfSignal"); }
+  catch(char const* exceptionString){
+    useTypeOfSignal = 0;
+    std::cerr<<" Signal Name set to 0 --> use both ggH and VBF if specified with the same name in the file list "<<std::endl;
+  }
+
+  std::cout<<" Option  useTypeOfSignal = "<<useTypeOfSignal<<std::endl;
+  std::cout<<std::endl;
+
 
   std::string SignalqqHName ;
   try{ SignalqqHName = gConfigParser -> readStringOption("Option::SignalqqHName"); }
@@ -202,14 +220,18 @@ int main (int argc, char** argv){
 	TString NameFile = Form("%s/%s.root",InputDirectory.c_str(),NameSample.at(iSample).c_str());
 	std::cout<<" Input File : "<< NameFile.Data()<<std::endl;
                 
-	if(NameReducedSample.at(iSample) == SignalqqHName ){
+	if(NameReducedSample.at(iSample) == SignalqqHName and (useTypeOfSignal == 0 or useTypeOfSignal == 1) ){
           signalFileList.push_back ( new TFile (NameFile.Data(),"READ") );
 	  if(signalFileList.back()!=0) signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
         }
+        else if(NameReducedSample.at(iSample) == SignalggHName and (useTypeOfSignal == 0 or useTypeOfSignal == 2)){
+          signalFileList.push_back ( new TFile (NameFile.Data(),"READ") );
+	  if(signalFileList.back()!=0) signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
+	}
 	else {
                backgroundFileList.push_back ( new TFile (NameFile.Data(),"READ") );
                if(backgroundFileList.back()!=0) backgroundTreeList.push_back( (TTree*) backgroundFileList.back()->Get(TreeName.c_str())); 
-	       }
+	}
   }
   std::cout<<std::endl;
   
@@ -229,55 +251,129 @@ int main (int argc, char** argv){
 
    std::string tempLabel; tempLabel = Label_ ;
 
-   WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel));
+   if(isTrainEachVariable == true){
+     
+     for(unsigned int iVariable = 0 ; iVariable < mapTrainingVariables.size() ; iVariable++){
+       WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName+"_"+mapTrainingVariables.at(iVariable), tempLabel));
+       // Set Input and Spectator Variables
+       std::cout<<std::endl;
+       std::cout<<" Start to set input variable  "<<mapTrainingVariables.at(iVariable)<<std::endl;
+       std::cout<<std::endl;
+ 
+       WWTrainingVector.back()->AddTrainingVariables(mapTrainingVariables.at(iVariable), mapSpectatorVariables);
 
-   // Set Input and Spectator Variables
-   std::cout<<std::endl;
-   std::cout<<" Set Training and Spectator Variables  "<<std::endl;
-   std::cout<<std::endl;
+       // Set Global Weight and signal + background Tree for MVA Training
+       std::vector<double> signalGlobalWeight (signalTreeList.size(),0.);
+       std::vector<double> backgroundGlobalWeight (backgroundTreeList.size(),0.);
 
-   WWTrainingVector.back()->AddTrainingVariables(mapTrainingVariables, mapSpectatorVariables);
+       int isSignal = 0;
+       int isBackground = 0;
 
-   // Set Global Weight and signal + background Tree for MVA Training
-   std::vector<double> signalGlobalWeight (signalTreeList.size(),0.);
-   std::vector<double> backgroundGlobalWeight (backgroundTreeList.size(),0.);
-
-   int isSignal = 0;
-   int isBackground = 0;
-
-   std::cout<<" Building Global Event Weight  + Add Trees "<<std::endl;
-   std::cout<<std::endl; 
+       std::cout<<" Building Global Event Weight  + Add Trees "<<std::endl;
+       std::cout<<std::endl; 
   
-   for(size_t iSample =0; iSample<NameSample.size() ; iSample++){
-
-    if( NameReducedSample.at(iSample) == SignalqqHName ) {
-       
-       signalGlobalWeight.at(isSignal) = SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample);
-       isSignal ++; 
-    }
-    else{
+       for(size_t iSample =0; iSample<NameSample.size() ; iSample++){
+ 
+       if(NameReducedSample.at(iSample) == SignalqqHName and (useTypeOfSignal == 0 or useTypeOfSignal == 1)  ) {       
+         signalGlobalWeight.at(isSignal) = SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample);
+         isSignal ++; 
+        }
+       else if(NameReducedSample.at(iSample) == SignalggHName and (useTypeOfSignal == 0 or useTypeOfSignal == 2)  ){
+         signalGlobalWeight.at(isSignal) = SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample);
+         isSignal ++; 
+       }
+        else{
           if(NameReducedSample.at(iSample) == "W+Jets")
   	    backgroundGlobalWeight.at(isBackground) = (SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample))*scaleFactorWjet;
           else 
   	    backgroundGlobalWeight.at(isBackground) = (SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample));
           isBackground ++;    
-	 }
-   }
-  
-   WWTrainingVector.back()->BookMVATrees(signalGlobalWeight, backgroundGlobalWeight);
-    
-   // Prepare and Set the MVA Factory
-   std::cout<<std::endl;
-   std::cout<<" Prepare MVA  "<<std::endl;
-   std::cout<<std::endl;
-     
-   WWTrainingVector.back()->AddPrepareTraining ( LeptonType,PreselectionCutType, EventWeight, &JetPtBinOfTraining, pTBin) ;
-  
-   // Book and Run TMVA Training and testing for the selected methods
-   std::cout<<" Loop on the Selected Methods  "<<std::endl;
-   std::cout<<std::endl;
+	}
+       } 
 
-   for(size_t iMethod =0; iMethod<UseMethodName.size(); iMethod++){
+      WWTrainingVector.back()->BookMVATrees(signalGlobalWeight, backgroundGlobalWeight);  
+      // Prepare and Set the MVA Factory
+      std::cout<<std::endl;
+      std::cout<<" Prepare MVA  "<<std::endl;
+      std::cout<<std::endl;
+     
+      WWTrainingVector.back()->AddPrepareTraining ( LeptonType,PreselectionCutType, EventWeight, &JetPtBinOfTraining, pTBin) ;
+  
+      // Book and Run TMVA Training and testing for the selected methods
+      std::cout<<" Loop on the Selected Methods  "<<std::endl;
+      std::cout<<std::endl;
+
+      for(size_t iMethod =0; iMethod<UseMethodName.size(); iMethod++){
+
+       // Rectangular Cuts
+       if(UseMethodName.at(iMethod) == "CutsMC" )      WWTrainingVector.back()->BookandTrainRectangularCuts("MC");
+       else if(UseMethodName.at(iMethod) == "CutsGA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("GA");
+       else if(UseMethodName.at(iMethod) == "CutsSA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("SA");
+       else { std::cerr<<" Training Method not implemented in the TMVATrainingClass for single variables --> Go to the next one and only rectangluar cuts"<<std::endl; std::cout<<std::endl;}
+      }
+  
+      WWTrainingVector.back()->CloseTrainingAndTesting();
+
+      //Print Output Plots
+      std::cout<<" Save Output Image after training and testing ..  "<<std::endl;
+      std::cout<<std::endl;
+      /*
+      if (isPrintResultwithTMVA) WWTrainingVector.back()->PrintTrainingResults ();
+      */
+     }
+   }
+   /*   
+   else{
+
+    WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel));
+
+    // Set Input and Spectator Variables
+    std::cout<<std::endl;
+    std::cout<<" Set Training and Spectator Variables  "<<std::endl;
+    std::cout<<std::endl;
+
+    WWTrainingVector.back()->AddTrainingVariables(mapTrainingVariables, mapSpectatorVariables);
+
+    // Set Global Weight and signal + background Tree for MVA Training
+    std::vector<double> signalGlobalWeight (signalTreeList.size(),0.);
+    std::vector<double> backgroundGlobalWeight (backgroundTreeList.size(),0.);
+
+    int isSignal = 0;
+    int isBackground = 0;
+
+    std::cout<<" Building Global Event Weight  + Add Trees "<<std::endl;
+    std::cout<<std::endl; 
+  
+    for(size_t iSample =0; iSample<NameSample.size() ; iSample++){
+
+     if( NameReducedSample.at(iSample) == SignalqqHName ) {
+       
+       signalGlobalWeight.at(isSignal) = SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample);
+       isSignal ++; 
+     }
+     else{
+          if(NameReducedSample.at(iSample) == "W+Jets")
+  	    backgroundGlobalWeight.at(isBackground) = (SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample))*scaleFactorWjet;
+          else 
+  	    backgroundGlobalWeight.at(isBackground) = (SampleCrossSection.at(iSample)/NumEntriesBefore.at(iSample));
+          isBackground ++;    
+     }
+    }
+  
+    WWTrainingVector.back()->BookMVATrees(signalGlobalWeight, backgroundGlobalWeight);
+    
+    // Prepare and Set the MVA Factory
+    std::cout<<std::endl;
+    std::cout<<" Prepare MVA  "<<std::endl;
+    std::cout<<std::endl;
+     
+    WWTrainingVector.back()->AddPrepareTraining ( LeptonType,PreselectionCutType, EventWeight, &JetPtBinOfTraining, pTBin) ;
+  
+    // Book and Run TMVA Training and testing for the selected methods
+    std::cout<<" Loop on the Selected Methods  "<<std::endl;
+    std::cout<<std::endl;
+
+    for(size_t iMethod =0; iMethod<UseMethodName.size(); iMethod++){
 
      // Rectangular Cuts
      if(UseMethodName.at(iMethod) == "CutsMC" )      WWTrainingVector.back()->BookandTrainRectangularCuts("MC");
@@ -323,8 +419,9 @@ int main (int argc, char** argv){
 
    if (isPrintResultwithTMVA) WWTrainingVector.back()->PrintTrainingResults ();
    
-
+   }*/
   }
+   
 
   return 0 ;
 
