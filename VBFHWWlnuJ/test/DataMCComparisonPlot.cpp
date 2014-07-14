@@ -35,10 +35,9 @@ void banner4Plot (const bool & isLabel){
   if (!isLabel) pt = new TPaveText(.20,0.69,.34,.91,"NDC");
   else pt = new TPaveText(.22,0.69,.28,.91,"NDC");
   pt->AddText("CA R = 0.8");
-  //pt->AddText("250 < p_{T} < 350 GeV");
   pt->AddText("p_{T} > 200 GeV");
-  pt->AddText("|#eta|<2.4");
-  pt->AddText("40 < m_{j} < 130 GeV");                                                                                                                                                       
+  pt->AddText("|#eta|<2.1");
+  pt->AddText("250 < m_{j} < 350 GeV");                                                                                                                                                       
   pt->SetFillColor(0);
   pt->SetTextSize(0.035);
   pt->SetFillStyle(0);
@@ -1124,8 +1123,8 @@ int main (int argc, char **argv){
                             MCUncertaintyBand_herwig[iCut][iVar]->Reset();
                           
                             // Some style
-                            RatioDataMC[iCut][iVar]->SetMinimum(0.001);
-                            RatioDataMC[iCut][iVar]->SetMaximum(2.);			
+                            RatioDataMC[iCut][iVar]->SetMinimum(0.5);
+                            RatioDataMC[iCut][iVar]->SetMaximum(1.5);			
 			    RatioDataMC[iCut][iVar]->GetYaxis()->SetTitle("Data / Sim");
 			    RatioDataMC[iCut][iVar]->GetYaxis()->SetTitleSize(0.105);
 			    RatioDataMC[iCut][iVar]->GetYaxis()->SetLabelSize(0.100);
@@ -1137,8 +1136,8 @@ int main (int argc, char **argv){
 			    RatioDataMC[iCut][iVar]->GetXaxis()->SetTitleOffset(0.75);
 
                             // Some style
-                            RatioDataMC_herwig[iCut][iVar]->SetMinimum(0.001);
-                            RatioDataMC_herwig[iCut][iVar]->SetMaximum(2.);			
+                            RatioDataMC_herwig[iCut][iVar]->SetMinimum(0.5);
+                            RatioDataMC_herwig[iCut][iVar]->SetMaximum(1.5);			
 			    RatioDataMC_herwig[iCut][iVar]->GetYaxis()->SetTitle("Data / Sim");
 			    RatioDataMC_herwig[iCut][iVar]->GetYaxis()->SetTitleSize(0.105);
 			    RatioDataMC_herwig[iCut][iVar]->GetYaxis()->SetLabelSize(0.100);
@@ -1150,8 +1149,8 @@ int main (int argc, char **argv){
 			    RatioDataMC_herwig[iCut][iVar]->GetXaxis()->SetTitleOffset(0.75);
 
                             // Some style
-                            RatioDataMC_error[iCut][iVar]->SetMinimum(0.001);
-                            RatioDataMC_error[iCut][iVar]->SetMaximum(2.);		      
+                            RatioDataMC_error[iCut][iVar]->SetMinimum(0.5);
+                            RatioDataMC_error[iCut][iVar]->SetMaximum(1.5);		      
 			    RatioDataMC_error[iCut][iVar]->GetYaxis()->SetTitle("Data / Sim");
 			    RatioDataMC_error[iCut][iVar]->GetYaxis()->SetTitleSize(0.105);
 			    RatioDataMC_error[iCut][iVar]->GetYaxis()->SetLabelSize(0.100);
@@ -1162,8 +1161,8 @@ int main (int argc, char **argv){
 			    RatioDataMC_error[iCut][iVar]->GetXaxis()->SetTitleOffset(0.75);
 
                             // Some style
-                            MCUncertaintyBand[iCut][iVar]->SetMinimum(0.001);
-                            MCUncertaintyBand[iCut][iVar]->SetMaximum(2.);		      
+                            MCUncertaintyBand[iCut][iVar]->SetMinimum(0.5);
+                            MCUncertaintyBand[iCut][iVar]->SetMaximum(1.5);		      
 			    MCUncertaintyBand[iCut][iVar]->GetYaxis()->SetTitle("Data / Sim");
 			    MCUncertaintyBand[iCut][iVar]->GetYaxis()->SetTitleSize(0.105);
 			    MCUncertaintyBand[iCut][iVar]->GetYaxis()->SetLabelSize(0.100);
@@ -1173,8 +1172,8 @@ int main (int argc, char **argv){
                             MCUncertaintyBand[iCut][iVar]->GetXaxis()->SetTitleSize(0.15);
 			    MCUncertaintyBand[iCut][iVar]->GetXaxis()->SetTitleOffset(0.75);
 
-                            MCUncertaintyBand_herwig[iCut][iVar]->SetMinimum(0.001);
-                            MCUncertaintyBand_herwig[iCut][iVar]->SetMaximum(2.);		      
+                            MCUncertaintyBand_herwig[iCut][iVar]->SetMinimum(0.5);
+                            MCUncertaintyBand_herwig[iCut][iVar]->SetMaximum(1.5);		      
 			    MCUncertaintyBand_herwig[iCut][iVar]->GetYaxis()->SetTitle("Data / Sim");
 			    MCUncertaintyBand_herwig[iCut][iVar]->GetYaxis()->SetTitleSize(0.105);
 			    MCUncertaintyBand_herwig[iCut][iVar]->GetYaxis()->SetLabelSize(0.100);
@@ -1197,8 +1196,7 @@ int main (int argc, char **argv){
                               if(MCUncertaintyBand[iCut][iVar]->GetBinError(iBin+1) != MCUncertaintyBand[iCut][iVar]->GetBinError(iBin+1)) MCUncertaintyBand[iCut][iVar]->SetBinError(iBin+1,0);
 			     }
 
-                             RatioLine->SetRange((RatioDataMC[iCut][iVar]->GetBinCenter(1)-RatioDataMC[iCut][iVar]->GetBinWidth(1)/2),(RatioDataMC[iCut][iVar]->GetBinCenter(RatioDataMC[iCut][iVar]->GetNbinsX()+1)-RatioDataMC[iCut][iVar]->GetBinWidth(RatioDataMC[iCut][iVar]->GetNbinsX()+1)/2));                          
-
+			     RatioLine->SetRange((RatioDataMC[iCut][iVar]->GetBinCenter(1)-RatioDataMC[iCut][iVar]->GetBinWidth(1)/2),(RatioDataMC[iCut][iVar]->GetBinCenter(RatioDataMC[iCut][iVar]->GetNbinsX()+1)-RatioDataMC[iCut][iVar]->GetBinWidth(RatioDataMC[iCut][iVar]->GetNbinsX()+1)/2));                          
                              MCUncertaintyBand[iCut][iVar]->SetLineColor(kGray+1);  
                              MCUncertaintyBand[iCut][iVar]->SetFillStyle(3001);
                              MCUncertaintyBand[iCut][iVar]->SetMarkerSize(0.);

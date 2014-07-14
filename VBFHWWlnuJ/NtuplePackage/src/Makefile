@@ -14,11 +14,11 @@ PrgSuf  =  .cpp
 BinSuf  =  .exe
 LibSuf  =  .so
 
-HDRS  =  $(wildcard $(HDR)*$(HdrSuf))
-SRCS  =  $(wildcard *$(SrcSuf))
+HDRS   =  $(wildcard $(HDR)*$(HdrSuf))
+SRCS   =  $(wildcard *$(SrcSuf))
 _OBJS  =  $(patsubst %$(SrcSuf), %$(ObjSuf), $(SRCS))
 OBJS   =  $(addprefix $(OBJ),$(_OBJS))
-PRGS  =  $(wildcard $(PRG)*$(PrgSuf))
+PRGS   =  $(wildcard $(PRG)*$(PrgSuf))
 _BINS    =  $(wildcard $(PRG)*$(PrgSuf))
 __BINS   =  $(_BINS:$(PrgSuf)=$(BinSuf))
 ___BINS  =  $(notdir $(__BINS))
@@ -116,13 +116,13 @@ $(OBJ)%$(ObjSuf): %$(SrcSuf) $(HDRS)
 	$(CXX)  $< -c $(CXXFLAGS) -o $@
 
 
-$(OBJ)mydict.o: $(OBJ)mydict.cc $(OBJ)mydict.h
-	$(CXX)  $< -c $(CXXFLAGS) -o $@
+#$(OBJ)mydict.o: $(OBJ)mydict.cc $(OBJ)mydict.h
+#	$(CXX)  $< -c $(CXXFLAGS) -o $@
 
 
 $(OBJ)mydict.cc: $(DICTHDRS)
 	@echo "Generating dictionary for  ..."
-	rootcint -f $(OBJ)mydict.cc -c -p ${CXXFLAGS} $(DICTHDRS)
+	rootcling -f $(OBJ)mydict.cc -c -p ${CXXFLAGS} $(DICTHDRS)
 
 $(LIB)$(SONAME): $(OBJS) $(OBJ)mydict.o
 	@echo "Linking $(SONAME):" 

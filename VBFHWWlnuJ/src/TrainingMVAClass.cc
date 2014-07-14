@@ -197,7 +197,7 @@ void TrainingMVAClass::BookandTrainLikelihood ( const std::string & LikelihoodTy
                            ":UseYesNoCell=T:DTLogic=MisClassificationError:FillFoamWithOrigWeights=F:TailCut=0:nActiveCells=300:nBin=20:Nmin=300:Kernel=None:Compress=T");
   }
   else{ Option = Form("%s",LikelihoodType.c_str());
-        factory_->BookMethod( TMVA::Types::kLikelihood, Option.Data(),"!H:!V:VarTransform=I,D,P:!TransformOutput:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpol=Spline2"
+        factory_->BookMethod( TMVA::Types::kLikelihood, Option.Data(),"!H:!V:VarTransform=I,N,D,P:!TransformOutput:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpol=Spline2"
 			                                              ":NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmoothBkg[1]=10:NSmooth=1:NAvEvtPerBin=50");
   }
 
@@ -286,7 +286,7 @@ void TrainingMVAClass::BookandTrainMLP(const int & nCycles, const std::string & 
   outputFileWeightName_["MLP_"+NeuronType+"_"+TrainingMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_MLP_"+NeuronType+"_"+TrainingMethod+"_"+Label_;
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["MLP_"+NeuronType+"_"+TrainingMethod+"_"+Label_];
 
-  TString Option = Form ("!H:!V:VarTransform=I,D,P,D:NCycles=%d:CalculateErrors:HiddenLayers=%s:NeuronType=%s:CreateMVAPdfs:TrainingMethod=%s:TestRate=%d"
+  TString Option = Form ("!H:!V:VarTransform=I,D,P,G:NCycles=%d:CalculateErrors:HiddenLayers=%s:NeuronType=%s:CreateMVAPdfs:TrainingMethod=%s:TestRate=%d"
 			 ":ConvergenceTests=%d:UseRegulator:EstimatorType=%s",nCycles,HiddenLayers.c_str(),NeuronType.c_str(),TrainingMethod.c_str(),TestRate,ConvergenceTests,
                           EstimatorType.c_str());
 
@@ -605,13 +605,24 @@ TString TrainingMVAClass::GetPreselectionCut (const std::string & LeptonType,con
 
 
   else if(preselectionCutType == "basicSRPreselectionCutEXO" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "muon") )
-    return Form(" issignal && v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && ( jet_mass_pr >=60 && jet_mass_pr <= 100 ) && (jet_GeneralizedECF >0 && jet_GeneralizedECF <1 && nbjets_csvm_veto == 0 && ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
+    return Form(" issignal && v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && ( jet_mass_pr >=60 && jet_mass_pr <= 100 ) && (jet_GeneralizedECF >0 && jet_GeneralizedECF <1) && nbjets_csvm_veto == 0 && ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
 
   else if(preselectionCutType == "basicSRPreselectionCutEXO" && (LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "electron") )
     return Form("issignal && v_pt > 200 && pfMET > 80 && l_pt > 90 && ungroomed_jet_pt > 200 && ( jet_mass_pr >=60 && jet_mass_pr <= 100 ) && nbjets_csvm_veto == 0 && (jet_GeneralizedECF >0 && jet_GeneralizedECF < 1 && ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
 
   else if(preselectionCutType == "basicSRPreselectionCutEXO" && (LeptonType == "MuEl" || LeptonType == "muel" || LeptonType == "MuonEle" || LeptonType == "muonele") )
     return Form("issignal && v_pt > 200 && pfMET > 50 && l_pt > 50 && ungroomed_jet_pt > 200 && ( jet_mass_pr >=60 && jet_mass_pr <= 100 ) && nbjets_csvm_veto == 0 &&(jet_GeneralizedECF > 0 && jet_GeneralizedECF < 1 ) && ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
+
+  // Raw MAss
+
+  else if(preselectionCutType == "basicSRPreselectionCutEXO_RawMass" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "muon") )
+    return Form(" issignal && v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && ( TMath::Sqrt(ungroomed_jet_e*ungroomed_jet_e-ungroomed_jet_pt*ungroomed_jet_pt-TMath::SinH(ungroomed_jet_eta)*TMath::SinH(ungroomed_jet_eta)*ungroomed_jet_pt*ungroomed_jet_pt) >=75 && TMath::Sqrt(ungroomed_jet_e*ungroomed_jet_e-ungroomed_jet_pt*ungroomed_jet_pt-TMath::SinH(ungroomed_jet_eta)*TMath::SinH(ungroomed_jet_eta)*ungroomed_jet_pt*ungroomed_jet_pt) <= 115 ) && (jet_GeneralizedECF >0 && jet_GeneralizedECF <1) && nbjets_csvm_veto == 0 && ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f ) ",pTJetMin_,pTJetMax_);
+
+  else if(preselectionCutType == "basicSRPreselectionCutEXO_RawMass" && (LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "electron") )
+    return Form("issignal && v_pt > 200 && pfMET > 80 && l_pt > 90 && ungroomed_jet_pt > 200 && ( TMath::Sqrt(ungroomed_jet_e*ungroomed_jet_e-ungroomed_jet_pt*ungroomed_jet_pt-TMath::SinH(ungroomed_jet_eta)*TMath::SinH(ungroomed_jet_eta)*ungroomed_jet_pt*ungroomed_jet_pt) >=75 && TMath::Sqrt(ungroomed_jet_e*ungroomed_jet_e-ungroomed_jet_pt*ungroomed_jet_pt-TMath::SinH(ungroomed_jet_eta)*TMath::SinH(ungroomed_jet_eta)*ungroomed_jet_pt*ungroomed_jet_pt) <= 115 ) && nbjets_csvm_veto == 0 && (jet_GeneralizedECF >0 && jet_GeneralizedECF < 1 && ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
+
+  else if(preselectionCutType == "basicSRPreselectionCutEXO_RawMass" && (LeptonType == "MuEl" || LeptonType == "muel" || LeptonType == "MuonEle" || LeptonType == "muonele") )
+    return Form("issignal && v_pt > 200 && pfMET > 50 && l_pt > 50 && ungroomed_jet_pt > 200 && ( TMath::Sqrt(ungroomed_jet_e*ungroomed_jet_e-ungroomed_jet_pt*ungroomed_jet_pt-TMath::SinH(ungroomed_jet_eta)*TMath::SinH(ungroomed_jet_eta)*ungroomed_jet_pt*ungroomed_jet_pt) >=75 && TMath::Sqrt(ungroomed_jet_e*ungroomed_jet_e-ungroomed_jet_pt*ungroomed_jet_pt-TMath::SinH(ungroomed_jet_eta)*TMath::SinH(ungroomed_jet_eta)*ungroomed_jet_pt*ungroomed_jet_pt) <= 115 ) && nbjets_csvm_veto == 0 &&(jet_GeneralizedECF > 0 && jet_GeneralizedECF < 1 ) && ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
 
   else if(preselectionCutType == "basicSRSBPreselectionCutEXO" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "muon") )
     return Form("issignal && v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && ( jet_mass_pr >=40 && jet_mass_pr <= 130 ) && nbjets_csvm_veto == 0"

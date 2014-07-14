@@ -118,13 +118,13 @@ $(OBJ)%$(ObjSuf): %$(SrcSuf) $(HDRS)
 	$(CXX) $< -c $(CXXFLAGS) -o $@ 
 
 
-$(OBJ)mydict.o: $(OBJ)mydict.cc $(OBJ)mydict.h
-	$(CXX) $< -c $(CXXFLAGS) -o $@ 
+#$(OBJ)mydict.o: $(OBJ)mydict.cc $(OBJ)mydict.h
+#	$(CXX) $< -c $(CXXFLAGS) -o $@ 
 
 
 $(OBJ)mydict.cc: $(DICTHDRS)
 	@echo "Generating dictionary for  ..."
-	rootcint -f $(OBJ)mydict.cc -c -p ${CXXFLAGS} $(DICTHDRS)
+	rootcling -f $(OBJ)mydict.cc -c -p ${CXXFLAGS} $(DICTHDRS)
 
 $(LIB)$(SONAME): $(OBJS) $(OBJ)mydict.o
 	@echo "Linking $(SONAME):"
